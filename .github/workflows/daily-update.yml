@@ -5,6 +5,9 @@ on:
     # Runs every day at 9:30 AM UTC (3:00 PM IST)
     - cron: '30 9 * * *'
   workflow_dispatch: # Allows manual triggering for testing
+  push:
+    branches:
+      - main
 
 jobs:
   daily-commit:

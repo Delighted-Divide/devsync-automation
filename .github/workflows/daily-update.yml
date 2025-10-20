@@ -1,0 +1,48 @@
+name: Daily Repository Update
+
+on:
+  schedule:
+    # Runs every day at 9:30 AM UTC (3:00 PM IST)
+    - cron: '30 9 * * *'
+  workflow_dispatch: # Allows manual triggering for testing
+
+jobs:
+  daily-commit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      
+      - name: Configure Git for 24f2005139@ds.study.iitm.ac.in
+        run: |
+          git config --local user.email "24f2005139@ds.study.iitm.ac.in"
+          git config --local user.name "DevSync Automation"
+      
+      - name: Create daily update
+        run: |
+          # Create a timestamp file for tracking
+          mkdir -p .devsync
+          echo "Last updated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > .devsync/daily-update.log
+          echo "Repository activity tracked by DevSync Solutions" >> .devsync/daily-update.log
+          echo "Automated commit #$GITHUB_RUN_NUMBER" >> .devsync/daily-update.log
+      
+      - name: Commit and push changes
+        run: |
+          git add .devsync/daily-update.log
+          git commit -m "chore: daily repository update - $(date -u '+%Y-%m-%d')" \
+                     -m "Automated commit for activity tracking" \
+                     -m "Run ID: $GITHUB_RUN_ID" \
+                     -m "Run Number: $GITHUB_RUN_NUMBER"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Verify commit
+        run: |
+          echo "✅ Daily commit successfully created"
+          echo "Commit details:"
+          git log -1 --pretty=format:"%h - %an, %ar : %s"
